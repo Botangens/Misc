@@ -33,11 +33,11 @@ namespace SmartReferenceCounter
 	template<class C>
 	class SmartRef
 	{
-		template <class C>	friend class SmartRef;
+		template <class O>	friend class SmartRef;
 	protected:
 		RefCounter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
 
-		template<class O = C>
+		template <class O = C>
 		inline void Copy(const SmartRef<O>& sm)
 		{
 			decRef();
@@ -71,11 +71,9 @@ namespace SmartReferenceCounter
 		}
 
 		inline C& operator *() { return *(C*)refCnt->objP; }  // casting to object
-		//inline C* operator &() { return (C*)refCnt->objP; }  // casting to object reference
 		inline C* operator ->() { return (C*)refCnt->objP; }  // casting to object`s props
 		inline operator C&() { return *(C*)refCnt->objP; }  // conversion to reference
 		inline operator C*() { return (C*)refCnt->objP; }  // conversion to pointer
-		inline SmartRef<C>* Ptr() { return this; }  // get own address
 
 		inline size_t getCount() { return refCnt->count; }
 
@@ -88,8 +86,6 @@ namespace SmartReferenceCounter
 	inline SmartRef<C> SmartArray(const size_t& s, const C& TC = C()) { return SmartRef<C>(TC, s); }
 	template<class C>
 	inline SmartRef<C> SmartArray(C* pc) { return SmartRef<C>(pc, true); }
-	template<class C>
-	inline SmartRef<C>* Ptr(SmartRef<C>& sr) { return sr.Ptr(); }
 };
 
 #endif /* REFCOUNTER_HPP_ */
