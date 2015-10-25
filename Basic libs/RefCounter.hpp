@@ -3,29 +3,38 @@
 
 namespace SmartReferenceCounter
 {
+	// technical virtual base class for proper type preserve
+	class Counter
+	{
+		template <class O>	friend class SmartRef;
+		template <class O>	friend class RefCounter;
+		size_t count{ 0 };  // <- reference counter
+		virtual ~Counter() {};  // <- virtual destructor - that is the purpose of this class existance
+	};
+
 	// technical class for containing object pointer and reference counter.
 	// Provides safe deletion.
-	class RefCounter
+	template<class C>
+	class RefCounter : public Counter
 	{
-		template <class C>	friend class SmartRef;
+		template <class O>	friend class SmartRef;
 	protected:
-		void* objP{ nullptr };  // <- object handle
-		size_t count{ 0 };  // <- reference counter
+		C* objP{ nullptr };  // <- object handle		
 		bool deletable{ false };  // <- technical data
 
-		static RefCounter nullCtr;
-
-		RefCounter() : count(1) {}  // default does not use object
-		template<class C>
+		RefCounter() { count = 1; }  // default does not use object
 		RefCounter(const C& cc, size_t s) : objP(new C[s]), deletable(true)
-			{ while (s > 0) ((C*)objP)[--s] = cc; }  // constructing from entity duplicates value
-		template<class C>
+		{
+			while (s > 0) objP[--s] = cc;
+		}  // constructing from entity duplicates value
 		RefCounter(C* pc) : objP(pc) {}  // construction from reference works with original
-		template<class C>
 		RefCounter(C* pc, int) : objP(pc), deletable(true) {} // array memory handling
 		~RefCounter() { if (deletable) delete[] objP; }  // smart deletion
+
+		static RefCounter nullCtr;
 	};
-	RefCounter RefCounter::nullCtr;
+	template<class C>
+	RefCounter<C> RefCounter<C>::nullCtr = RefCounter<C>();
 
 	// template for smart reference. Provides counter, automatic deletion and type
 	// conversion. Designed for easy implementing into code that is already tested
@@ -35,7 +44,8 @@ namespace SmartReferenceCounter
 	{
 		template <class O>	friend class SmartRef;
 	protected:
-		RefCounter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
+
+		Counter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
 
 		template <class O = C>
 		inline void Copy(const SmartRef<O>& sm)
@@ -45,12 +55,12 @@ namespace SmartReferenceCounter
 		}
 
 	public:
-		SmartRef() { ++(refCnt = &RefCounter::nullCtr)->count; }  // default constructor. Uses no object
-		SmartRef(C* pc) { ++(refCnt = new RefCounter(pc))->count; } // reference constructor. Counts further refs. No auto deletion
+		SmartRef() { ++(refCnt = &RefCounter<C>::nullCtr)->count; }  // default constructor. Uses no object
+		SmartRef(C* pc) { ++(refCnt = new RefCounter<C>(pc))->count; } // reference constructor. Counts further refs. No auto deletion
 
 		template <class Temp>
-		SmartRef(C* pc, Temp) { ++(refCnt = new RefCounter(pc, 0))->count; } // reference array constructor. Auto deletion provided
-		SmartRef(const C& c, const size_t& s = 1) { ++(refCnt = new RefCounter(c, s))->count; } // object/array constructor with initialization. Total memory handling
+		SmartRef(C* pc, Temp) { ++(refCnt = new RefCounter<C>(pc, 0))->count; } // reference array constructor. Auto deletion provided
+		SmartRef(const C& c, const size_t& s = 1) { ++(refCnt = new RefCounter<C>(c, s))->count; } // object/array constructor with initialization. Total memory handling
 		SmartRef(const SmartRef<C>& sm) { ++(refCnt = sm.refCnt)->count; } // same-type copy constructor. Provides proper ref counting and memory handling
 
 		template<class Other>
@@ -70,10 +80,10 @@ namespace SmartReferenceCounter
 			return *this;
 		}
 
-		inline C& operator *() { return *(C*)refCnt->objP; }  // casting to object
-		inline C* operator ->() { return (C*)refCnt->objP; }  // casting to object`s props
-		inline operator C&() { return *(C*)refCnt->objP; }  // conversion to reference
-		inline operator C*() { return (C*)refCnt->objP; }  // conversion to pointer
+		inline C& operator *() { return *((RefCounter<C>*)refCnt)->objP; }  // casting to object
+		inline C* operator ->() { return ((RefCounter<C>*)refCnt)->objP; }  // casting to object`s props
+		inline operator C&() { return *((RefCounter<C>*)refCnt)->objP; }  // conversion to reference
+		inline operator C*() { return ((RefCounter<C>*)refCnt)->objP; }  // conversion to pointer
 
 		inline size_t getCount() { return refCnt->count; }
 
