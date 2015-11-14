@@ -12,12 +12,40 @@
 
 //------------------------ project includes --------------------------
 #include "CoreTypes.hpp"
+#include "Timer.hpp"
 
 //------------------------------- MAIN -------------------------------
 
 int main()
 {
+    int a = 0, b;
+    std::cout << "enter amount of loops:   ";
+    std::cin >> b;
+
+    Time t1 = SystemTime();
+    DeltaTime dt1 = ProgramTime();
+    for (int i = 0; i<b; i++)
+    {
+        a += i;
+    }
+    Time t2 = SystemTime();
+    DeltaTime dt2 = ProgramTime();
+    DeltaTime deltatime(dt2 - dt1);
+
+    std::cout << "dt=deltatime:  " << deltatime << std::endl;
+    std::cout << "dt(millisec):  " << deltatime.asMilliSec() << std::endl;
+    std::cout << "System time 1: " << t1.as_c_str() << std::endl;
+    std::cout << "System time 2: " << t2.as_c_str() << std::endl;
+    std::cout << "SysT2 - SysT1: " << t2 - t1 << std::endl;
+    std::cout << "SysT2 + 10*dt: " << (t2 + 10. * deltatime).as_c_str() << std::endl << std::endl;
+    std::cout << "dt1 (clocks) : " << dt1.clocks() << std::endl;
+    std::cout << "dt2 (clocks) : " << dt2.clocks() << std::endl;
+    std::cout << "SysT1(clocks): " << t1.times() << std::endl;
+    std::cout << "SysT2(clocks): " << t2.times() << std::endl;
+
+
 	std::cin.get();
+    std::cin.get();
 	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
 	sf::CircleShape shape(100.f);
 	shape.setFillColor(sf::Color::Green);
