@@ -16,6 +16,7 @@ typedef TIME_INT64_T time_int64_t;
 #endif
 
 const time_int64_t MAX_CLOCK = ( (time_int64_t) 1 << ( sizeof( clock_t ) * 8 - 1 ) ) - 1;
+const time_int64_t MIN_CLOCK = - ( (time_int64_t)1 << ( sizeof( clock_t ) * 8 - 1) );
 
 const time_real_t SEC_PER_CLOCK = 1. / CLOCKS_PER_SEC;
 
@@ -42,8 +43,6 @@ class DeltaTime
   friend DeltaTime ProgramTime();
 protected:
   clock_t ticks;
-
-  //clock_t tosex() { return ticks / CLOCKS_PER_SEC; }
 
 public:
   DeltaTime(): ticks(0) {}
@@ -109,6 +108,11 @@ public:
 
 };
 
+const static DeltaTime ZERO_DeltaTime = DeltaTime();
+const static DeltaTime SMALLEST_DeltaTime = DeltaTime( 1 );
+const static DeltaTime MAX_DeltaTime = DeltaTime( MAX_CLOCK );
+const static DeltaTime MIN_DeltaTime = DeltaTime( MIN_CLOCK );
+
 inline DeltaTime operator*(const time_real_t& v, const DeltaTime& dt)
 {
 	return DeltaTime(clock_t(time_real_t(dt.ticks) * v));
@@ -133,7 +137,7 @@ class Time
   friend Time SystemTime();
 protected:
   time_int64_t ticks;
-public:
+
   static time_t sex;
   const static time_int64_t start_ticks;
 public:
@@ -195,21 +199,28 @@ inline Time SystemTime()
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-
 class Timer
 {
+protected:
+    DeltaTime StartT{ ZERO_DeltaTime };
+    DeltaTime StopT{ ZERO_DeltaTime };
+    DeltaTime CountedT{ ZERO_DeltaTime };
+    DeltaTime LastT{ ZERO_DeltaTime };
+
+    DeltaTime TempT{ ZERO_DeltaTime };
 public:
 	Timer();
-	~Timer();
+	virtual ~Timer();
+
+    virtual void Start(const DeltaTime& dt = ZERO_DeltaTime);
+    virtual DeltaTime Stop();
+    virtual DeltaTime Reset(const DeltaTime& dt = ZERO_DeltaTime);
+    virtual DeltaTime Restart(const DeltaTime& dt = ZERO_DeltaTime);
+    virtual DeltaTime Update();
+
+    inline const DeltaTime& GetTime() const { return CountedT; }
+    inline const DeltaTime& GetLast() const { return LastT; }
+    inline const DeltaTime& GetStart() const { return StartT; }
+    inline const DeltaTime& GetStop() const { return StopT; }
+
 };
-/*
-const time_t timer = time(NULL);
-printf("%s\n", ctime(&timer));
-
-
-time_t t = time(NULL);
-tm* aTm = localtime(&t);
-printf("%04d/%02d/%02d %02d:%02d:%02d \n", aTm->tm_year + 1900, aTm->tm_mon + 1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
-getchar();
-*/
