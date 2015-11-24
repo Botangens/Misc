@@ -15,6 +15,7 @@
 #include "Timer.hpp"
 
 //------------------------------- MAIN -------------------------------
+using namespace Perspective;
 
 int main()
 {
@@ -22,15 +23,17 @@ int main()
     std::cout << "enter amount of loops:   ";
     std::cin >> b;
 
+    
+
     Time t1 = SystemTime();
-    DeltaTime dt1 = ProgramTime();
+    Duration dt1 = ProgramTime();
     for (int i = 0; i<b; i++)
     {
         a += i;
     }
     Time t2 = SystemTime();
-    DeltaTime dt2 = ProgramTime();
-    DeltaTime deltatime(dt2 - dt1);
+    Duration dt2 = ProgramTime();
+    Duration deltatime(dt2 - dt1);
 
     std::cout << "dt=deltatime:  " << deltatime << std::endl;
     std::cout << "dt(millisec):  " << deltatime.asMilliSec() << std::endl;
