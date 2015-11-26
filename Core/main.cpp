@@ -13,6 +13,7 @@
 //------------------------ project includes --------------------------
 #include "CoreTypes.hpp"
 #include "Timer.hpp"
+#include "TimeUtils.hpp"
 
 //------------------------------- MAIN -------------------------------
 using namespace Perspective;
@@ -22,8 +23,7 @@ int main()
     int a = 0, b;
     std::cout << "enter amount of loops:   ";
     std::cin >> b;
-
-    
+    std::cout << "calculating...\n";
 
     Time t1 = SystemTime();
     Duration dt1 = ProgramTime();
@@ -70,7 +70,6 @@ int main()
 			printf("Time: %d:%d\n", ((int)time.asSeconds()) / 60, (int)time.asSeconds() );
 		}
 		
-
 		window.clear();
 		window.draw(shape);
 		window.display();

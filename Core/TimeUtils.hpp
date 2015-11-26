@@ -11,13 +11,13 @@ namespace Perspective
 {
 // ========================== External functions ============================
 
-    // make current thread inactive for a given duration. Has milliseconds 
+    // make current thread inactive for a given duration. Has OS-dependent 
     // precision. Based on std::thread, so have to be std::thread-compatible.
     // Should not consume any CPU power.
     void Sleep(const Duration& Dur);
 
     // make current thread inactive until a given time (or duration since 
-    // program start). Has milliseconds precision. Based on std::thread, so 
+    // program start). Has OS-dependent precision. Based on std::thread, so 
     // have to be std::thread-compatible. Should not consume any CPU power.
     void SleepUntil(const Duration& Dur);
     void SleepUntil(const Time& Tm);
@@ -56,6 +56,8 @@ namespace Perspective
         inline void waitUntil( const Duration& Dur ) { Expected = Dur; }  // begin awaiting for a specific time point
         inline bool check() const { return PTimer->GetTime() >= Dur ? true : false; }  // check if the time has come
     };
+
+// ------------------------------- Repeater ---------------------------------
 
     // simple template class. Provides functionality for repeatedly performed
     // time checks based on a specific timer.
