@@ -41,10 +41,10 @@ int main()
     std::cout << "System time 2: " << t2.as_c_str() << std::endl;
     std::cout << "SysT2 - SysT1: " << t2 - t1 << std::endl;
     std::cout << "SysT2 + 10*dt: " << (t2 + 10. * deltatime).as_c_str() << std::endl << std::endl;
-    std::cout << "dt1 (clocks) : " << dt1.clocks() << std::endl;
-    std::cout << "dt2 (clocks) : " << dt2.clocks() << std::endl;
-    std::cout << "SysT1(clocks): " << t1.times() << std::endl;
-    std::cout << "SysT2(clocks): " << t2.times() << std::endl;
+    std::cout << "dt1 (clocks) : " << dt1.showTicks() << std::endl;
+    std::cout << "dt2 (clocks) : " << dt2.showTicks() << std::endl;
+    std::cout << "SysT1(clocks): " << t1.showTicks() << std::endl;
+    std::cout << "SysT2(clocks): " << t2.showTicks() << std::endl;
 
 
 	std::cin.get();

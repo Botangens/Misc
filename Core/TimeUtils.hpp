@@ -54,7 +54,7 @@ namespace Perspective
 
         inline void waitFor( const Duration& Dur ) { Expected = Dur + ProgramTime(); }  // begin awaiting for a duration since now
         inline void waitUntil( const Duration& Dur ) { Expected = Dur; }  // begin awaiting for a specific time point
-        inline bool check() const { return PTimer->GetTime() >= Dur ? true : false; }  // check if the time has come
+        inline bool check() const { return PTimer->GetTime() >= Expected ? true : false; }  // check if the time has come
     };
 
 // ------------------------------- Repeater ---------------------------------
@@ -73,7 +73,7 @@ namespace Perspective
         Repeater( TimerType* PT, const Duration& Per = seconds( 1 ) ) : PTimer( PT ), Period( Per ) {}
 
         inline void repeat( const Duration& Per ) { Expected = ProgramTime() + (Period = Per); }  // call for repeating with new period
-        inline void repeat() { Expected += Per; }  // call for repeating with same period
+        inline void repeat() { Expected += Period; }  // call for repeating with same period
         inline bool check() const { return PTimer->GetTime() >= Expected ? true : false; }  // check if the time has come
     };
 

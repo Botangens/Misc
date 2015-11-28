@@ -4,12 +4,23 @@
 
 #include "Timer.hpp"
 
-// no additional dependencies
+// Private constant - program start chrono::time_point
+const std::chrono::steady_clock::time_point START_time_point =
+    std::chrono::steady_clock::now();
 
 namespace Perspective
 {
 
 // ------------------------------ Duration ---------------------------------
+
+    // implementation of main function. Actually must be inlined but I doubt.
+    Duration ProgramTime()
+    {
+      //return Duration( ( std::chrono::steady_clock::now() -
+      //    START_time_point ).count() / COUNT_PER_CLOCK );
+        return Duration( (std::chrono::steady_clock::now() -
+            START_time_point ).count() );
+    }
 
 // -------------------------------- Time ------------------------------------
 
@@ -17,7 +28,22 @@ namespace Perspective
     time_t Time::sex{ 0 };
 
     // protected static constant for storaging approximate program start time
-    const time_int64_t Time::start_ticks = (time(0) * CLOCKS_PER_SEC) - (clock() % CLOCKS_PER_SEC);
+    // TODO: add constatnc Duration::startTicks based on SteadyClock
+    const time_tick_t Time::start_ticks = (time(0) * TICKS_PER_SEC) + 
+        (ProgramTime().getTicks() % TICKS_PER_SEC);
+
+    // returns current moment of time
+    Time SystemTime()
+    {
+        return Time( (time( 0 ) * TICKS_PER_SEC) + 
+            (ProgramTime().getTicks() % TICKS_PER_SEC) );
+    }
+
+    // returns current moment of time
+    Time SteadyTime()
+    {
+        return Time( Time::start_ticks + ProgramTime() );
+    }
 
 // ------------------------------- Timer ------------------------------------
 
