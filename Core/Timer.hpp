@@ -1,28 +1,47 @@
 /*
- * Perspective module for time management.
- * Similar to std::chrono, but self-made accidently.
- * Depends on <ctime>, <cstdint>
- * .cpp depends on <chrono>
- * Several types can be externally defined before first include
- */
+* Perspective module for time management.
+* Similar to std::chrono, but self-made accidently.
+* Depends on <ctime>, <cstdint>
+* .cpp depends on <chrono>
+* Several types can be externally defined before first include
+*/
 
 #pragma once
 
-// External dependencies: <ctime>, <cstdint>, <chrono>. All OS dependent.
+// External dependencies: <ctime>, <cstdint>. Both OS dependent.
 #include <time.h>
 #include <stdint.h>
-#include <chrono>  // std::chrono::steady_clock, duration, time_point
+#include <chrono>
 
-// ---------------------------------------------------------------------------
+#ifdef PER_TIME_WINDOWS_QPC
+#include <Windows.h>
+#endif
+
+// ============================== Type declarations =========================
 
 namespace Perspective
 {
 
-    // Inner types for data calculations. Can be defined externally.
-#ifndef TIME_REAL_T
-    typedef double time_real_t;
+// --------------------------------------------------------------------------
+
+#ifdef PER_TIME_WINDOWS_QPC  // Windows query performance counter implementation
+
+#ifndef TIME_INT64_T
+    typedef __int64 time_int64_t;
 #else
-    typedef TIME_REAL_T time_real_t;
+    typedef TIME_INT64_T time_int64_t;
+#endif
+
+    // main type to store ticks
+    typedef __int64 time_tick_t;
+
+    // amount of calculated ticks in one second
+    extern const time_tick_t TICKS_PER_SEC;  // defined in .cpp
+
+#else  // std::chrono-based manual implementation (default)
+    
+#ifndef PER_TIME_CHRONO_HYBRID
+#define PER_TIME_CHRONO_HYBRID
 #endif
 
 #ifndef TIME_INT64_T
@@ -31,30 +50,39 @@ namespace Perspective
     typedef TIME_INT64_T time_int64_t;
 #endif
 
+    // main type to store ticks
+    typedef std::chrono::steady_clock::rep time_tick_t;
+
+    // amount of calculated ticks in one second
+    static const time_tick_t TICKS_PER_SEC =
+        std::chrono::steady_clock::period::den /
+        std::chrono::steady_clock::period::num;
+
+#endif
+
+// ---------------------------------------------------------------------------
+
+    // Inner types for data calculations. Can be defined externally.
+#ifndef TIME_REAL_T
+    typedef double time_real_t;
+#else
+    typedef TIME_REAL_T time_real_t;
+#endif
+
 #ifndef TIME_INT_T
     typedef int time_int_t;
 #else
     typedef TIME_INT_T time_int_t;
 #endif
 
-    // main type to store ticks
-    typedef std::chrono::steady_clock::rep time_tick_t;
-
-// --------------------------------------------------------------------------
+// ~~~~~~~~~~~~~~~~~~~~ Implementation-dependant constants ~~~~~~~~~~~~~~~~~~
 
     // implementation-dependent constants for controlling ticks value range
     const time_int64_t MAX_TICK = ((time_int64_t)1 << (sizeof( time_tick_t ) * 8 - 1)) - 1;
     const time_int64_t MIN_TICK = -((time_int64_t)1 << (sizeof( time_tick_t ) * 8 - 1));
 
-    // amount of calculated ticks in one second
-    static const time_tick_t TICKS_PER_SEC = 
-        std::chrono::steady_clock::period::den /
-        std::chrono::steady_clock::period::num;
-
-    // Private constant for transforming ticks ( chrono::duration.count() ) 
-    // into CPU time clocks
-    static const clock_t TICKS_PER_CLOCK = std::chrono::steady_clock::period::den /
-    (std::chrono::steady_clock::period::num * CLOCKS_PER_SEC);
+    // Private constant for transforming ticks into CPU time clocks
+    static const clock_t TICKS_PER_CLOCK = TICKS_PER_SEC / CLOCKS_PER_SEC;
 
     // OS dependent constants for fast but less accurate calculations
     const time_real_t SEC_PER_TICK = 1. / TICKS_PER_SEC;
@@ -65,35 +93,16 @@ namespace Perspective
     const time_real_t MSEC_PER_TICK = 1000. / TICKS_PER_SEC;
 #define TICKS_PER_MSEC ( TICKS_PER_SEC / 1000 )
 
-// --------------------------------------------------------------------------
+// ============================ Duration ===================================
 
-    // OS dependent constants for controlling clocks value range (for CPU time)
-    const time_int64_t MAX_CLOCK = ((time_int64_t)1 << (sizeof( clock_t ) * 8 - 1)) - 1;
-    const time_int64_t MIN_CLOCK = -((time_int64_t)1 << (sizeof( clock_t ) * 8 - 1));
-
-    // OS dependent constants for fast but less accurate calculations
-    const time_real_t SEC_PER_CLOCK = 1. / CLOCKS_PER_SEC;
-
-#if CLOCKS_PER_SEC >= 1000000
-    const time_real_t USEC_PER_CLOCK = 1000000. / CLOCKS_PER_SEC;
-#define CLOCKS_PER_USEC ( CLOCKS_PER_SEC / 1000000 )
-#endif
-
-#if CLOCKS_PER_SEC >= 1000
-    const time_real_t MSEC_PER_CLOCK = 1000. / CLOCKS_PER_SEC;
-#define CLOCKS_PER_MSEC ( CLOCKS_PER_SEC / 1000 )
-#endif
-
-    // ============================ Duration ===================================
-
-        // global time class predeclaration
+    // global time class predeclaration
     class Time;
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        // Class Duration - main class for handling time events. Represents time
-        // interval. Provides: safe time algebra, conversions to/from real,
-        // collaboration with global time.
+    // Class Duration - main class for handling time events. Represents time
+    // interval. Provides: safe time algebra, conversions to/from real,
+    // collaboration with global time.
     class Duration
     {
         // friends for safety
@@ -107,7 +116,8 @@ namespace Perspective
         time_tick_t ticks;  // the class contains a single number
 
     public:
-        // -------------------------- Methods --------------------------------------
+
+// -------------------------- Methods --------------------------------------
 
         Duration() : ticks( 0 ) {}  // default constructor, creates zero-length time interval.
         Duration( const time_tick_t& v ) : ticks( v ) {}  // main constructor. May work with clock();
@@ -119,7 +129,7 @@ namespace Perspective
             return *this;
         }
 
-        // ------------------------ Time algebra ------------------------------------
+// ------------------------ Time algebra ------------------------------------
 
         inline Duration& operator+= ( const Duration& dt )  // addition assignment
         {
@@ -148,7 +158,7 @@ namespace Perspective
         inline Duration operator/ ( const time_real_t& v ) const { return Duration( time_tick_t( time_real_t( ticks ) / v ) ); }  // scaling division
         inline Time operator+ ( const Time& T );  // global time addition - reversed order operands
 
-        // --------------------------- Comparisons ----------------------------------
+// --------------------------- Comparisons ----------------------------------
 
         inline bool operator== ( const Duration& dt ) const { return ticks == dt.ticks; }
         inline bool operator!= ( const Duration& dt ) const { return ticks != dt.ticks; }
@@ -157,7 +167,7 @@ namespace Perspective
         inline bool operator>= ( const Duration& dt ) const { return ticks >= dt.ticks; }
         inline bool operator<= ( const Duration& dt ) const { return ticks <= dt.ticks; }
 
-        // ------------------------ Various functionality ---------------------------
+// ------------------------ Various functionality ---------------------------
 
         inline const time_tick_t& getTicks() const { return ticks; }  // protected data exposition
 
@@ -172,72 +182,44 @@ namespace Perspective
 
         inline time_real_t asMicroSec() const { return (time_real_t)ticks / TICKS_PER_USEC; }  // contains real-type division
         inline time_real_t asMicroSecFast() const { return (time_real_t)ticks * USEC_PER_TICK; }  // !DANGER! fast but may cause rounding errors
-        inline time_int_t asMicroSecInt() const { return (time_int_t) ( ticks / TICKS_PER_USEC ); }  // contains int-type division
+        inline time_int_t asMicroSecInt() const { return (time_int_t)(ticks / TICKS_PER_USEC); }  // contains int-type division
 
         inline time_real_t asMilliSec() const { return (time_real_t)ticks / TICKS_PER_MSEC; }  // contains real-type division
         inline time_real_t asMilliSecFast() const { return (time_real_t)ticks * MSEC_PER_TICK; }  // !DANGER! fast but may cause rounding errors
-        inline time_int_t asMilliSecInt() const { return (time_int_t) ( ticks / TICKS_PER_MSEC ); }  // contains int-type division
-        
+        inline time_int_t asMilliSecInt() const { return (time_int_t)(ticks / TICKS_PER_MSEC); }  // contains int-type division
+
         inline time_real_t asSec() const { return (time_real_t)ticks / TICKS_PER_SEC; }  // contains real-type division
         inline time_real_t asSecFast() const { return (time_real_t)ticks * SEC_PER_TICK; }  // !DANGER! fast but may cause rounding errors
-        inline time_int_t asSecInt() const { return (time_int_t) ( ticks / TICKS_PER_SEC ); }  // contains int-type division
+        inline time_int_t asSecInt() const { return (time_int_t)(ticks / TICKS_PER_SEC); }  // contains int-type division
 
-    //deprecated
-    // OS dependent functionality: provides max-accurate possible conversions
-    //#if CLOCKS_PER_SEC >= 1000000
-    //    inline time_real_t asMicroSec() const { return (time_real_t)ticks / CLOCKS_PER_USEC; }  // contains real-type division
-    //    inline time_real_t asMicroSecFast() const { return (time_real_t)ticks * USEC_PER_CLOCK; }  // !DANGER! fast but may cause rounding errors
-    //    inline time_int_t asMicroSecInt() const { return (time_int_t)ticks / CLOCKS_PER_USEC; }  // contains int-type division
-    //#endif
-    //#if CLOCKS_PER_SEC >= 1000
-    //    inline time_real_t asMilliSec() const { return (time_real_t)ticks / CLOCKS_PER_MSEC; }  // contains real-type division
-    //    inline time_real_t asMilliSecFast() const { return (time_real_t)ticks * MSEC_PER_CLOCK; }  // !DANGER! fast but may cause rounding errors
-    //    inline time_int_t asMilliSecInt() const { return (time_int_t)ticks / CLOCKS_PER_MSEC; }  // contains int-type division
-    //#endif
-    //    inline time_real_t asSec() const { return (time_real_t)ticks / CLOCKS_PER_SEC; }  // contains real-type division
-    //    inline time_real_t asSecFast() const { return (time_real_t)ticks * SEC_PER_CLOCK; }  // !DANGER! fast but may cause rounding errors
-    //    inline time_int_t asSecInt() const { return (time_int_t)ticks / CLOCKS_PER_SEC; }  // contains int-type division
     };
 
-    // ~~~~~~~~~~~~~~~~~~ Duration External functionality ~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~ Duration External functionality ~~~~~~~~~~~~~~~~~~~~~~~
 
-        // constant static Duration instances
+    // constant static Duration instances
     const static Duration ZERO_Duration = Duration();  // zero-time interval
     const static Duration SMALLEST_Duration = Duration( 1 );  // smallest possible time interval
     const static Duration MAX_Duration = Duration( MAX_TICK );  // maximal deltatime value
     const static Duration MIN_Duration = Duration( MIN_TICK );  // minimal deltatime value
+
+    inline Duration microsec( const time_tick_t& v ) { return Duration( time_tick_t( v * TICKS_PER_USEC ) ); }
+    inline Duration millisec( const time_tick_t& v ) { return Duration( time_tick_t( v * TICKS_PER_MSEC ) ); }
+    inline Duration seconds( const time_real_t& v ) { return Duration( time_tick_t( v * TICKS_PER_SEC ) ); }
 
     inline Duration operator*( const time_real_t& v, const Duration& dt )  // reversed order operands real scaling multiplication
     {
         return Duration( time_tick_t( time_real_t( dt.ticks ) * v ) );
     }
 
-    inline Duration microsec( const time_tick_t& v ) { return Duration( time_tick_t( v * TICKS_PER_USEC ) ); }
-    inline Duration millisec( const time_tick_t& v ) { return Duration( time_tick_t( v * TICKS_PER_MSEC ) ); }
-    inline Duration seconds( const time_real_t& v ) { return Duration( time_tick_t( v * TICKS_PER_SEC ) ); }
-
-//deprecated
-//    // OS dependent external constructors of various precision
-//#if CLOCKS_PER_SEC >= 1000000
-//    inline Duration microsec( const clock_t& v ) { return Duration( clock_t( v * CLOCKS_PER_USEC ) ); }
-//#endif
-//#if CLOCKS_PER_SEC >= 1000
-//    inline Duration millisec( const clock_t& v ) { return Duration( clock_t( v * CLOCKS_PER_MSEC ) ); }
-//#endif
-//    inline Duration seconds( const time_real_t& v ) { return Duration( clock_t( v * CLOCKS_PER_SEC ) ); }
-
     // !IMPORTANT! main function for retrieving current time interval. Returns time
     // interval since program has started.
-    inline Duration ProgramTime();  // returns time interval since program has started
+    /* inline? */ inline Duration ProgramTime();  // returns time interval since program has started
 
     // Returns total approximate amount of CPU time consumed by all threads of
     // program since it has started
-    inline Duration ConsumedTime()
-    {
-        return Duration( (time_tick_t)clock() * TICKS_PER_CLOCK );
-    }
+    /* inline? */ inline Duration ConsumedTime();  // returns amount of concumed CPU time
 
-    // ============================== Time =====================================
+// ============================== Time =====================================
 
     // Class Time. Represents moment of time, contains ticks since epoch. Can be
     // converted to c-struct tm and/or string timestamp, etc. Has same precision as
@@ -251,6 +233,8 @@ namespace Perspective
     {
         // friends for safety
         friend class Duration;
+        friend Duration ProgramTime();
+        friend Duration ConsumedTime();
         friend Time SystemTime();
         friend Time SteadyTime();
     protected:
@@ -259,7 +243,8 @@ namespace Perspective
         static time_t sex;  // totally protected. Temporal variable for conversion to seconds
         const static time_tick_t start_ticks;  // totally protected. Program start Time (1 sec error possible)
     public:
-        // -------------------------- Methods --------------------------------------
+
+// -------------------------- Methods --------------------------------------
 
         Time() : ticks( Time::start_ticks ) {}  // default constructor. Returns program start moment (1 sec error possible). Synonym to StartMoment
         Time( const time_tick_t& t ) : ticks( t ) {}  // main constructor
@@ -295,9 +280,9 @@ namespace Perspective
         inline bool operator> ( const Time& T ) const { return ticks > T.ticks; }
         inline bool operator< ( const Time& T ) const { return ticks < T.ticks; }
 
-        // ------------------------ Various functionality ---------------------------
+// ------------------------ Various functionality ---------------------------
 
-                // real-type conversion: returns amount of seconds since epoch.
+        // real-type conversion: returns amount of seconds since epoch.
         inline operator time_real_t () const { return time_real_t( (time_real_t)ticks / TICKS_PER_SEC ); }
 
         inline const time_tick_t& getTicks() const { return ticks; }  // protected data exposition
@@ -317,32 +302,34 @@ namespace Perspective
         }
     };
 
-    // ~~~~~~~~~~~~~~~~~~~~~ Time External functionality ~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~ Time External functionality ~~~~~~~~~~~~~~~~~~~~~~~
 
     inline Time Duration::operator+ ( const Time& T ) { return Time( ticks + T.ticks ); }  // reversed order operands interval addition
 
-    // !IMPORTANT! main function. Returns current moment of time. Returned value
-    // contains approximate amount of ticks since epoch. Although Time is as
-    // accurate as Duration - it depends from time() function, which has
-    // 1 second precision. Therefore it constantly contains up to 1 second
-    // difference with global time.
-    Time SystemTime();  // returns current system time
-  
-    inline Time SteadyTime();  // returns current time moment
+    // !IMPORTANT! main function. Returns current moment of time. Returned 
+    // value contains approximate amount of ticks since epoch. Although Time
+    // is as accurate as Duration - it may depend from time() function, which
+    // has 1 second precision. Therefore it constantly contains up to 1 second
+    // difference with global time. Also SystemTime() is steady: it is not 
+    // affected by system clock adjustments (like winter-summer time change)
+    /* inline? */ inline Time SystemTime();  // returns current system time (steady)
+
+    // Returns current moment of time in global time
+    /* inline? */ inline Time GlobalTime();  // returns current time moment in global time
 
     // Moment of time when the program has started. 1 second error may
     // occur (read 'SystemTime' description)
     static const Time StartMoment = Time();
 
-    // ============================== Timer =====================================
+// ============================== Timer =====================================
 
-        // Class Timer. Virtual class that provides basic time calculation
-        // functionality. Contains 5 Durations (4 accessible) and several methods
-        // for different time management approaches. Time should be an abstract
-        // algebraic concept. Therefore timer operates with the amounts of time
-        // (Durations), but not the moments of time. Time moments are also stored
-        // as Durations for memory efficiency and speed.
-        // Basically works as simple Start-Stop-Get timer.
+    // Class Timer. Virtual class that provides basic time calculation
+    // functionality. Contains 5 Durations (4 accessible) and several methods
+    // for different time management approaches. Time should be an abstract
+    // algebraic concept. Therefore timer operates with the amounts of time
+    // (Durations), but not the moments of time. Time moments are also stored
+    // as Durations for memory efficiency and speed.
+    // Basically works as simple Start-Stop-Get timer.
     class Timer
     {
     protected:
@@ -368,4 +355,105 @@ namespace Perspective
         inline const Duration& GetStart() const { return StartT; }  // simple protected getter
         inline const Duration& GetStop() const { return StopT; }  // simple protected getter
     };
+}
+
+// ==========================================================================
+
+// ============================ Implementations =============================
+
+// ==========================================================================
+
+namespace Perspective
+{
+
+#ifdef PER_TIME_WINDOWS_QPC
+
+    struct _win_QPC_local
+    {
+        __int64 _tempTicks;  // temporal variable for ticks per second
+        __int64 _startTicks;  // local variable for program time evaluation
+        __int64 _startTimeTicks;  // local variable for ticks of start time.
+        __int64 _startShifted;  // 
+        __int64 _startTime;  //
+
+        _win_QPC_local()
+        {
+            if (!QueryPerformanceFrequency( (LARGE_INTEGER*)&_tempTicks ))
+                throw ("Performance counters not supported");
+            QueryPerformanceCounter( (LARGE_INTEGER*)&_startTicks );
+            _startTime = time( 0 );
+            _startTimeTicks = _startTime * _tempTicks;
+            _startShifted = _startTicks - _startTicks % _tempTicks;
+        }
+    } _QPC_local;  // temporal instance for initializations
+
+    // period initialization
+    const time_tick_t TICKS_PER_SEC = _QPC_local._tempTicks;
+
+// ------------------------------ Duration ---------------------------------
+
+    // implementation of main function. Actually must be inlined but I doubt.
+    Duration ProgramTime()
+    {
+        QueryPerformanceCounter( (LARGE_INTEGER*)&_QPC_local._tempTicks );
+        return Duration( _QPC_local._tempTicks - _QPC_local._startTicks );
+    }
+
+    // returns total approxymate amount of consumed by all trhreads CPU time
+    Duration ConsumedTime()
+    {
+        return Duration( (time_tick_t)clock() * TICKS_PER_CLOCK );
+    }
+
+// -------------------------------- Time ------------------------------------
+
+    // returns current moment of system time
+    Time SystemTime()
+    {
+        QueryPerformanceCounter( (LARGE_INTEGER*)&_QPC_local._tempTicks );
+        return Time( _QPC_local._startTimeTicks + _QPC_local._tempTicks - _QPC_local._startTicks );
+    }
+
+    // TODO: add system-not-steady implementation
+    // returns current moment of global time
+    Time GlobalTime()
+    {
+        QueryPerformanceCounter( (LARGE_INTEGER*)&_QPC_local._tempTicks );
+        return Time( _QPC_local._startTimeTicks + _QPC_local._tempTicks - _QPC_local._startTicks );
+    }
+
+
+
+#else
+
+// ------------------------------ Duration ---------------------------------
+
+    // implementation of main function. Actually must be inlined but I doubt.
+    Duration ProgramTime()
+    {
+        return Duration( std::chrono::steady_clock::now().time_since_epoch().count() - Time::start_ticks );
+    }
+
+    // returns total approxymate amount of consumed by all trhreads CPU time
+    Duration ConsumedTime()
+    {
+        return Duration( (time_tick_t)clock() * TICKS_PER_CLOCK );
+    }
+
+// -------------------------------- Time ------------------------------------
+
+    // returns current moment of system time
+    Time SystemTime()
+    {
+        return Time( std::chrono::steady_clock::now().time_since_epoch().count() );
+    }
+
+    // TODO: add system-not-steady implementation
+    // returns current moment of global time
+    Time GlobalTime()
+    {
+        return Time( std::chrono::steady_clock::now().time_since_epoch().count() );
+    }
+
+#endif
 }

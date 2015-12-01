@@ -1,8 +1,8 @@
 /*
-* File: main.cpp
-* Created: November 5, 2015
-* Contains: Main loop
-*/
+ * File: main.cpp
+ * Created: November 5, 2015
+ * Contains: Main loop
+ */
 
 //------------------------ standart includes -------------------------
 #include <iostream>
@@ -20,14 +20,17 @@ using namespace Perspective;
 
 int main()
 {
-    int a = 0, b;
+    std::cout << TICKS_PER_SEC << "\n";
+    std::cout << CLOCKS_PER_SEC << "\n";
+    
+    __int64 a = 0, b;
     std::cout << "enter amount of loops:   ";
     std::cin >> b;
     std::cout << "calculating...\n";
 
     Time t1 = SystemTime();
     Duration dt1 = ProgramTime();
-    for (int i = 0; i<b; i++)
+    for (__int64 i = 0; i<b; i++)
     {
         a += i;
     }
@@ -41,13 +44,12 @@ int main()
     std::cout << "System time 2: " << t2.as_c_str() << std::endl;
     std::cout << "SysT2 - SysT1: " << t2 - t1 << std::endl;
     std::cout << "SysT2 + 10*dt: " << (t2 + 10. * deltatime).as_c_str() << std::endl << std::endl;
-    std::cout << "dt1 (clocks) : " << dt1.showTicks() << std::endl;
-    std::cout << "dt2 (clocks) : " << dt2.showTicks() << std::endl;
-    std::cout << "SysT1(clocks): " << t1.showTicks() << std::endl;
-    std::cout << "SysT2(clocks): " << t2.showTicks() << std::endl;
+    std::cout << "dt1 (clocks) : " << dt1.getTicks() << std::endl;
+    std::cout << "dt2 (clocks) : " << dt2.getTicks() << std::endl;
+    std::cout << "SysT1(clocks): " << t1.getTicks() << std::endl;
+    std::cout << "SysT2(clocks): " << t2.getTicks() << std::endl;
 
-
-	std::cin.get();
+    std::cin.get();
     std::cin.get();
 	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
 	sf::CircleShape shape(100.f);
