@@ -7,6 +7,8 @@
 
 #include "Timer.hpp"
 
+const Perspective::time_tick_t _TPS = Perspective::TICKS_PER_SEC;
+
 namespace Perspective
 {
 // ========================== External functions ============================

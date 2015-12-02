@@ -12,13 +12,17 @@
 
 inline void _Sleep( const Perspective::Duration& Dur )
 {
-#ifdef CLOCKS_PER_USEC
+#if _TPS >= 1000000
     std::this_thread::sleep_for( std::chrono::microseconds( Dur.asMicroSecInt() ) );
-#elif CLOCKS_PER_MSEC
+#elif _TPS >= 1000
     std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
 #else
-    std::this_thread::sleep_for( std::chrono::seconds( Dur.asMilliSecInt() ) );
+    std::this_thread::sleep_for( std::chrono::seconds( Dur.asSecInt() ) );
 #endif
+
+    // UNDONE: check that is above on windows and if does not work for ms
+    // duration - replace all with next:
+    //std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
 }
 
 // --------------------------------------------------------------------------

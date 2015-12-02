@@ -415,6 +415,7 @@ namespace Perspective
     }
 
     // TODO: add system-not-steady implementation
+    // IMPROVE: windows-QPC and time.h based global time getter is needed!
     // returns current moment of global time
     Time GlobalTime()
     {
@@ -452,7 +453,7 @@ namespace Perspective
     // returns current moment of global time
     Time GlobalTime()
     {
-        return Time( std::chrono::steady_clock::now().time_since_epoch().count() );
+        return Time( std::chrono::system_clock::now().time_since_epoch().count() );
     }
 
 #endif
