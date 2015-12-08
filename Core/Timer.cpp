@@ -2,6 +2,7 @@
 * Timer.hpp implementations
 */
 
+// ------------------------- Project dependencies ---------------------------
 #include "Timer.hpp"
 
 namespace Perspective

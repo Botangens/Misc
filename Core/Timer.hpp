@@ -8,7 +8,7 @@
 
 #pragma once
 
-// External dependencies: <ctime>, <cstdint>. Both OS dependent.
+// Standert dependencies: <ctime>, <cstdint>. Both OS dependent.
 #include <time.h>
 #include <stdint.h>
 #include <chrono>

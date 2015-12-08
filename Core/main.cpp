@@ -4,19 +4,20 @@
  * Contains: Main loop
  */
 
-//------------------------ standart includes -------------------------
+//------------------------ Standart includes -------------------------
 #include <iostream>
 
-//------------------------ external includes -------------------------
+//------------------------ External includes -------------------------
 #include <SFML/Graphics.hpp>
 
-//------------------------ project includes --------------------------
+//------------------------ Project includes --------------------------
 #include "CoreTypes.hpp"
 #include "Timer.hpp"
 #include "TimeUtils.hpp"
 
 //------------------------------- MAIN -------------------------------
 using namespace Perspective;
+
 
 int main()
 {

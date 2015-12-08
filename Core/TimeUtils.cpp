@@ -4,8 +4,7 @@
 
 #include "TimeUtils.hpp"
 
-// External dependencies: <chrono>, <thread>
-#include <chrono>  // std::chrono::duration
+// Standart dependencies: <thread>
 #include <thread>  // std::this_tread::sleep_for
 
 // ----------------------- Local utility functions --------------------------
@@ -20,8 +19,8 @@ inline void _Sleep( const Perspective::Duration& Dur )
     std::this_thread::sleep_for( std::chrono::seconds( Dur.asSecInt() ) );
 #endif
 
-    // UNDONE: check that is above on windows and if does not work for ms
-    // duration - replace all with next:
+    // TODO: check and reconsider currnt implementation is correct. If no - 
+    // chenge with next:
     //std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
 }
 
