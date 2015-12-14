@@ -78,8 +78,8 @@ namespace Perspective
 // ~~~~~~~~~~~~~~~~~~~~ Implementation-dependant constants ~~~~~~~~~~~~~~~~~~
 
     // implementation-dependent constants for controlling ticks value range
-    const time_int64_t MAX_TICK = ((time_int64_t)1 << (sizeof( time_tick_t ) * 8 - 1)) - 1;
-    const time_int64_t MIN_TICK = -((time_int64_t)1 << (sizeof( time_tick_t ) * 8 - 1));
+    const time_tick_t MAX_TICK = ((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1)) - 1;
+    const time_tick_t MIN_TICK = MAX_TICK + 1; //-((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1));
 
     // Private constant for transforming ticks into CPU time clocks
     static const clock_t TICKS_PER_CLOCK = TICKS_PER_SEC / CLOCKS_PER_SEC;
@@ -319,7 +319,7 @@ namespace Perspective
 
     // Moment of time when the program has started. 1 second error may
     // occur (read 'SystemTime' description)
-    static const Time StartMoment = Time();
+    static const Time StartMoment = GlobalTime();
 
 // ============================== Timer =====================================
 

@@ -8,7 +8,8 @@
 // ------------------------- Project dependencies ---------------------------
 #include "Timer.hpp"
 
-const Perspective::time_tick_t _TPS = Perspective::TICKS_PER_SEC;
+// deprecated
+//const Perspective::time_tick_t _TPS = Perspective::TICKS_PER_SEC;
 
 namespace Perspective
 {
@@ -19,7 +20,7 @@ namespace Perspective
     // Should not consume any CPU power.
     void Sleep(const Duration& Dur);
 
-    // make current thread inactive until a given time (or duration since 
+    // make current thread inactive until a given time point (or duration since
     // program start). Has OS-dependent precision. Based on std::thread, so 
     // have to be std::thread-compatible. Should not consume any CPU power.
     void SleepUntil(const Duration& Dur);
@@ -57,7 +58,7 @@ namespace Perspective
 
         inline void waitFor( const Duration& Dur ) { Expected = Dur + ProgramTime(); }  // begin awaiting for a duration since now
         inline void waitUntil( const Duration& Dur ) { Expected = Dur; }  // begin awaiting for a specific time point
-        inline bool check() const { return PTimer->GetTime() >= Expected ? true : false; }  // check if the time has come
+        inline bool check() const { return PTimer->GetTime() >= Expected; }  // check if the time has come
     };
 
 // ------------------------------- Repeater ---------------------------------
@@ -77,7 +78,7 @@ namespace Perspective
 
         inline void repeat( const Duration& Per ) { Expected = ProgramTime() + (Period = Per); }  // call for repeating with new period
         inline void repeat() { Expected += Period; }  // call for repeating with same period
-        inline bool check() const { return PTimer->GetTime() >= Expected ? true : false; }  // check if the time has come
+        inline bool check() const { return PTimer->GetTime() >= Expected; }  // check if the time has come
     };
 
 }

@@ -11,17 +11,22 @@
 
 inline void _Sleep( const Perspective::Duration& Dur )
 {
-#if _TPS >= 1000000
-    std::this_thread::sleep_for( std::chrono::microseconds( Dur.asMicroSecInt() ) );
-#elif _TPS >= 1000
-    std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
-#else
-    std::this_thread::sleep_for( std::chrono::seconds( Dur.asSecInt() ) );
-#endif
 
-    // TODO: check and reconsider currnt implementation is correct. If no - 
-    // chenge with next:
-    //std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
+// seems like this attempt does not work
+//#if _TPS >= 1000000
+//    std::cout<<"--1000000"<<std::endl;
+//    std::this_thread::sleep_for( std::chrono::microseconds( Dur.asMicroSecInt() ) );
+//#elif _TPS >= 1000
+//    std::cout<<"--1000"<<std::endl;
+//    std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
+//#else
+//    //std::cout<<"--1"<<std::endl;
+//    std::this_thread::sleep_for( std::chrono::seconds( Dur.asSecInt() ) );
+//#endif
+
+    // simple and nice
+    std::this_thread::sleep_for( std::chrono::milliseconds( Dur.asMilliSecInt() ) );
+
 }
 
 // --------------------------------------------------------------------------
