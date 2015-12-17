@@ -236,7 +236,7 @@ namespace Perspective
         friend Duration ProgramTime();
         friend Duration ConsumedTime();
         friend Time SystemTime();
-        friend Time SteadyTime();
+        friend Time GlobalTime();
     protected:
         time_tick_t ticks;  // <- main data - amount of ticks since epoch
 
@@ -339,10 +339,10 @@ namespace Perspective
         Duration LastT{ ZERO_Duration };  // a moment of last Update event
 
         Duration TempT{ ZERO_Duration };  // totally protected. Temporal variable
-        const static Duration PrestartT;  // a moment 1 tick before program has started
+        const static Duration PrestartT;  // a moment 1 tick before epoch
     public:
         Timer();  // simple default constructor
-        virtual ~Timer() {}  // virtual destructor
+        virtual ~Timer() = default;  // virtual destructor
 
         virtual void Start( const Duration& dt = ZERO_Duration );  // begins time calculation. Adds argument to calculated time
         virtual Duration Stop();  // if WasOn - makes last time update. Stops time calculation, returns calculated time 
