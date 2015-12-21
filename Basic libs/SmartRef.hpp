@@ -41,14 +41,14 @@ namespace SmartReferenceCounter
 	protected:
 		Counter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
 
-		inline void Copy(const Counter* c)
+		inline void Copy(const Counter* c)  // copy the counter (given as const coz calling methods take const refs)
 		{
 			decRef();
-			++(refCnt = (Counter*)c)->count;
+			++(refCnt = (Counter*)c)->count;  // deconst the counter and processing
 		}
 
 	public:
-		SmartRef() { ++(refCnt = &nullRef)->count; }  // default constructor. Uses no object
+		SmartRef() { ++(refCnt = &nullRef)->count; }  // default constructor. Uses no object. Counts as nullRef
 		SmartRef(C* pc) { ++(refCnt = new RefCounter<C>(pc))->count; } // reference constructor. Counts further refs. No auto deletion
 		template <class Temp>
 		SmartRef(C* pc, Temp) { ++(refCnt = new RefCounter<C>(pc, 0))->count; } // reference array constructor. Auto deletion provided
@@ -88,9 +88,9 @@ namespace SmartReferenceCounter
 		inline void decRef() { if (refCnt && !(--refCnt->count)) delete refCnt; }  // decreasing reference counter with calling of deletion
 	};
 
-	template <class C>
+	template <class C>  // Create self-clearing SmartRef which points to a new array of length 's' filled with copy of optional second argument
 	inline SmartRef<C> SmartArray(const size_t& s, const C& TC = C()) { return SmartRef<C>(TC, s); }
-	template <class C>
+	template <class C>  // Create self-clearing SmartRef which 'steals' the given reference
 	inline SmartRef<C> SmartArray(C* pc) { return SmartRef<C>(pc, true); }
 };
 
