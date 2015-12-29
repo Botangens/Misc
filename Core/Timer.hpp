@@ -78,19 +78,21 @@ namespace Perspective
 // ~~~~~~~~~~~~~~~~~~~~ Implementation-dependant constants ~~~~~~~~~~~~~~~~~~
 
     // implementation-dependent constants for controlling ticks value range
-    const time_tick_t MAX_TICK = ((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1)) - 1;
-    const time_tick_t MIN_TICK = MAX_TICK + 1; //-((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1));
+    constexpr time_tick_t MIN_TICK = (time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1);
+    constexpr time_tick_t MAX_TICK = -1 - MIN_TICK;
+    //const time_tick_t MAX_TICK = ((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1)) - 1;
+    //const time_tick_t MIN_TICK = MAX_TICK + 1; //-((time_tick_t)1 << (sizeof( time_tick_t ) * 8 - 1));
 
     // Private constant for transforming ticks into CPU time clocks
     static const clock_t TICKS_PER_CLOCK = TICKS_PER_SEC / CLOCKS_PER_SEC;
 
     // OS dependent constants for fast but less accurate calculations
-    const time_real_t SEC_PER_TICK = 1. / TICKS_PER_SEC;
+    static const time_real_t SEC_PER_TICK = 1. / TICKS_PER_SEC;
 
-    const time_real_t USEC_PER_TICK = 1000000. / TICKS_PER_SEC;
+    static const time_real_t USEC_PER_TICK = 1000000. / TICKS_PER_SEC;
 #define TICKS_PER_USEC ( TICKS_PER_SEC / 1000000 )
 
-    const time_real_t MSEC_PER_TICK = 1000. / TICKS_PER_SEC;
+    static const time_real_t MSEC_PER_TICK = 1000. / TICKS_PER_SEC;
 #define TICKS_PER_MSEC ( TICKS_PER_SEC / 1000 )
 
 // ============================ Duration ===================================
