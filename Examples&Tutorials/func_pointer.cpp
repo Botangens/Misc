@@ -16,6 +16,33 @@ void print( double ( *foo )() )
     cout << foo() << endl;
 }
 
+// ---- average hardness. Functor as a pointer to static function ----
+
+template<class C>
+class A
+{
+    static C _v;
+    static C& _get()  { return _v; }
+public:
+    A( const C& c )  { _v = c; }
+
+    typedef C& (*F)();
+    operator F ()
+    {
+        return (F)(&A::_get);
+    }
+
+};
+template<class C> C A<C>::_v;
+
+double D1 = 11;
+double& Dfoo() { return D1; }
+
+void print( double& (*foo)() )
+{
+    cout << foo()++ << endl;
+}
+
 // ---- the HARD PART! templated member functor in templated class ---- 
 
 // templated 2d vector
@@ -58,6 +85,14 @@ int main()
 {
     print( get4 );
     print( get6 );
+
+    cout << "--------\n";
+
+    A<double> a( 7 );
+    print( a );
+    print( a );
+    print( Dfoo );
+    print( Dfoo );
 
     cout << "--------\n";
 
