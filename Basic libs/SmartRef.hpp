@@ -8,13 +8,14 @@ namespace SmartReferenceCounter
 	{
 		template <class O> friend class SmartRef;
 		template <class O> friend class RefCounter;
+    protected:
 		size_t count{ 0 };  // <- reference counter
 		virtual ~Counter() {};  // <- virtual destructor - that is the purpose of this class existance
 	};
 
 	// Technical class for containing object pointer. Provides safe deletion.
 	template<class C = void*>
-	class RefCounter : public Counter
+	class RefCounter : protected Counter
 	{
 		template <class O> friend class SmartRef;
 	protected:
