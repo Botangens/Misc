@@ -19,6 +19,7 @@ namespace SmartReferenceCounter
 	{
 		template <class O> friend class SmartRef;
 	protected:
+		typedef C ObjectType;
 		C* objP{ nullptr };  // <- object handle
 		bool deletable{ false };  // <- technical data
 
@@ -30,7 +31,7 @@ namespace SmartReferenceCounter
 	};
 
 	// Cunning class for nullifying references (like nullptr) in default constructors.
-	class NullReference : RefCounter<> { template <class O> friend class SmartRef; } nullRef;
+	class NullReference final : RefCounter<> { template <class O> friend class SmartRef; } nullRef;
 
 	// Template for smart reference. Provides counter, automatic deletion and type
 	// conversion. Designed for easy implementing into code that is already tested
@@ -40,6 +41,7 @@ namespace SmartReferenceCounter
 	{
 		template <class O> friend class SmartRef;
 	protected:
+		typedef C ObjectType;
 		Counter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
 
 		inline void Copy(const Counter* c)  // copy the counter (given as const coz calling methods take const refs)
@@ -47,7 +49,6 @@ namespace SmartReferenceCounter
 			decRef();
 			++(refCnt = (Counter*)c)->count;  // deconst the counter and processing
 		}
-
 	public:
 		SmartRef() { ++(refCnt = &nullRef)->count; }  // default constructor. Uses no object. Counts as nullRef
 		SmartRef(C* pc) { ++(refCnt = new RefCounter<C>(pc))->count; } // reference constructor. Counts further refs. No auto deletion
