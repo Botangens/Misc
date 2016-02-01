@@ -19,6 +19,7 @@ namespace Namespace
     {
         template <class O> friend class D;
     protected:
+        typedef T M;
         T* ptr{ nullptr };
         bool property{ false };
 
@@ -30,7 +31,7 @@ namespace Namespace
     };
 
 
-    class C : B<> { template <class O> friend class D; } instance;
+    class C final : B<> { template <class O> friend class D; } instance;
 
 
 
@@ -40,6 +41,7 @@ namespace Namespace
     {
         template <class O> friend class D;
     protected:
+        typedef T M;
         A* pa{ nullptr };
 
         inline void _method( const A* c )
@@ -47,7 +49,6 @@ namespace Namespace
             method3();
             ++(pa = (A*)c)->n;
         }
-
     public:
         D() { ++(pa = &instance)->n; }
         D( T* PC ) { ++(pa = new B<T>( PC ))->n; }
