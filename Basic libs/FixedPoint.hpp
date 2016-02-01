@@ -84,6 +84,8 @@ namespace FixedPointNumerics
         inline bool operator <= ( const FPN& f ) const { return v <= f.v; }
 
 // -------------------------------- Arithmetics -----------------------------
+        inline FPN operator + () { return FPN( v, true ); }  // integer promotion
+        inline FPN operator - () { return FPN( -v, true ); }  // additive inverse
         inline FPN operator + ( const FPN& f ) const { return FPN( v + f.v, true ); }
         inline FPN operator - ( const FPN& f ) const { return FPN( v - f.v, true ); }
         inline FPN operator * ( const FPN& f ) const
