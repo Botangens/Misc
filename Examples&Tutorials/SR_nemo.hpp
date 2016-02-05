@@ -19,7 +19,7 @@ namespace Namespace
     {
         template <class O> friend class D;
     protected:
-        typedef T M;
+        using M = T;
         T* ptr{ nullptr };
         bool property{ false };
 
@@ -37,11 +37,11 @@ namespace Namespace
 
 
     template<class T>
-    class D
+    struct D
     {
         template <class O> friend class D;
+        using M = T;
     protected:
-        typedef T M;
         A* pa{ nullptr };
 
         inline void _method( const A* c )
@@ -91,7 +91,7 @@ namespace Namespace
     };
 
     template <class T>
-    inline D<T> Func( const size_t& i, const T& TC = T() ) { return D<T>( TC, i ); }
+    inline D<T> Func( const size_t& i, const T& TC = {} ) { return D<T>( TC, i ); }
     template <class T>
     inline D<T> Func( T* pc ) { return D<T>( pc, true ); }
 };

@@ -19,7 +19,7 @@ namespace SmartReferenceCounter
 	{
 		template <class O> friend class SmartRef;
 	protected:
-		typedef C ObjectType;
+		using ObjectType = C;
 		C* objP{ nullptr };  // <- object handle
 		bool deletable{ false };  // <- technical data
 
@@ -33,16 +33,16 @@ namespace SmartReferenceCounter
 	// Cunning class for nullifying references (like nullptr) in default constructors.
 	class NullReference final : RefCounter<> { template <class O> friend class SmartRef; } nullRef;
 
-	// Template for smart reference. Provides counter, automatic deletion and type
-	// conversion. Designed for easy implementing into code that is already tested
-	// and close to completion. SmartRef behaves both like pointer and entity.
+    // Smart reference. Provides count, automatic deletion and type conversion.
+	// Designed for easy implementing into code that is already tested and
+	// close to completion. Behaves both like pointer and entity.
 	template<class C>
-	class SmartRef
+	struct SmartRef
 	{
-		template <class O> friend class SmartRef;
+		template <class O> friend class SmartRef;  // Any SmartRef is a friend to any other SmartRef
+        using ObjectType = C;
 	protected:
-		typedef C ObjectType;
-		Counter* refCnt{ nullptr };  // <- actually the only reference in SmartRef
+		Counter* refCnt{ nullptr };  // <- actually the only data in SmartRef
 
 		inline void Copy(const Counter* c)  // copy the counter (given as const coz calling methods take const refs)
 		{
@@ -91,7 +91,7 @@ namespace SmartReferenceCounter
 	};
 
 	template <class C>  // Create self-clearing SmartRef which points to a new array of length 's' filled with copy of optional second argument
-	inline SmartRef<C> SmartArray(const size_t& s, const C& TC = C()) { return SmartRef<C>(TC, s); }
+	inline SmartRef<C> SmartArray(const size_t& s, const C& TC = {}) { return SmartRef<C>(TC, s); }
 	template <class C>  // Create self-clearing SmartRef which 'steals' the given reference
 	inline SmartRef<C> SmartArray(C* pc) { return SmartRef<C>(pc, true); }
 };
