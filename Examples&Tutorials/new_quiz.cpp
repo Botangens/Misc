@@ -13,7 +13,9 @@ int main()
 {
   struct { int operator()(){return {};} } i;
 
-  int i0, i1 {}, i2 = {}, i3(), i4 = int(), i5 = i(), i6 = i3();
+  auto a = []()->int{return {};};
+
+  int i0, i1 {}, i2 = {}, i3(), i4 = int(), i5 = i(), i6 = i3(), i7 = a();
 
   auto ai2 = i2;
   auto ai3 = i3;
@@ -28,6 +30,7 @@ int main()
   T_PRINT( i4 );
   T_PRINT( i5 );
   T_PRINT( i6 );
+  T_PRINT( i7 );
   T_PRINT( i );
 
   cout<<endl;
@@ -48,4 +51,5 @@ int i3() { return {13}; }
 int i4() { return {14}; }
 int i5() { return {15}; }
 int i6() { return {16}; }
+int i7() { return {17}; }
 int i() { return {101}; }
