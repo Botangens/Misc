@@ -10,7 +10,7 @@ class C
 {
 private:
     //!! Again this is 'totally' private subclass. All the constructors and
-    // operator= are private. The type is either private. Everything is
+    // operator= are private. The type is also private. Everything is
     // private (like in nightmare of communists).
     // TODO: In addition one should test this with the nameless subclass and
     // auto return type for getters with C++14.
