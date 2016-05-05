@@ -12,6 +12,9 @@ using namespace std;
 
 // =========================== Testing utils ================================
 
+// Pay attention: these macros are the very first type of function-like
+// instances. Yet they are not really callable nor even objects...
+
 // Shortcut for std::is_same printing
 #define Same( X, Y ) \
   cout << #X << "\t = " << #Y << "\t" << std::is_same<X, Y>() << endl;
