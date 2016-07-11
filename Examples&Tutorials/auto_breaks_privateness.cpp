@@ -1,3 +1,6 @@
+// NOTE: this example is valid for MSVS and respective 
+// compiler. Result may be different with other compilers.
+
 #include <iostream>
 using namespace std;
 
@@ -42,10 +45,10 @@ int main()
     
     cout << c1.getSub().i << "\t" << a.i << endl;
     
-    // Do not worry - the type itself remains inaccessible so one can`t 
-    // inherite it nor use in a template - only create auto object. 
-    // In addition making thi copy constructor private WILL prevent from
-    // this 'typeleak', however one can always create a reference like:
-    // 'auto& a = getSub();'
+    // Do not worry - the type itself remains (allmost) inaccessible so 
+    // one can`t inherite it nor use in a template - only create auto 
+    // object. In addition making thi copy constructor private WILL 
+    // prevent from this 'typeleak', however one can always create 
+    // a reference like: 'auto& a = getSub();'
     cin.get();
 }
