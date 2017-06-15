@@ -3,6 +3,16 @@ using namespace std;
 
 // Just an esoteric program - you may try to comprehend what is going on here.
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CASE 0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+struct S
+{
+  S& s;
+  int v{-1};
+  
+  S(S& s): s(s) {}
+};
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CASE 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 struct Outer1
@@ -65,6 +75,12 @@ Outer3::Outer3(Inner3& r): i3(r), v(r.v){}
 
 int main()
 {
+  // ------------- 0 ------------------
+  
+  S s{s};
+  
+  cout<<s.s.s.s.s.s.s.s.s.s.v<<endl;
+  
   // ------------- 1 ------------------
 
   Outer1::Inner1 i1{i1};
