@@ -3,7 +3,7 @@
 
 namespace SmartReferenceCounter
 {
-	// Technical virtual base class for proper type preserve
+	// Utility virtual base class for proper type preserve
 	class Counter
 	{
 		template <class O> friend class SmartRef;
@@ -13,7 +13,7 @@ namespace SmartReferenceCounter
 		virtual ~Counter() {};  // <- virtual destructor - that is the purpose of this class existance
 	};
 
-	// Technical class for containing object pointer. Provides safe deletion.
+	// Utility class for containing object pointer. Provides safe deletion.
 	template<class C = void*>
 	class RefCounter : protected Counter
 	{
@@ -21,11 +21,11 @@ namespace SmartReferenceCounter
 	protected:
 		using ObjectType = C;
 		C* objP{ nullptr };  // <- object handle
-		bool deletable{ false };  // <- technical data
+		bool deletable{ false };  // <- marks if the pointer was 'stolen'
 
 		RefCounter() { count = 1; }  // default does not use object
 		RefCounter(const C& cc, size_t s) : objP(new C[s]), deletable(true) { while (s > 0) objP[--s] = cc; }  // constructing from entity duplicates value
-		RefCounter(C* pc) : objP(pc) {}  // construction from reference works with original
+		RefCounter(C* pc) : objP(pc) {}  // construction from pointer works with original
 		RefCounter(C* pc, int) : objP(pc), deletable(true) {} // array memory handling
 		~RefCounter() { if (deletable) delete[] objP; }  // smart deletion
 	};
@@ -51,9 +51,9 @@ namespace SmartReferenceCounter
 		}
 	public:
 		SmartRef() { ++(refCnt = &nullRef)->count; }  // default constructor. Uses no object. Counts as nullRef
-		SmartRef(C* pc) { ++(refCnt = new RefCounter<C>(pc))->count; } // reference constructor. Counts further refs. No auto deletion
-		template <class Temp>
-		SmartRef(C* pc, Temp) { ++(refCnt = new RefCounter<C>(pc, 0))->count; } // reference array constructor. Auto deletion provided
+		SmartRef(C* pc) { ++(refCnt = new RefCounter<C>(pc))->count; } // pointer constructor. Counts further refs. No auto deletion
+		template <class Flag>
+		SmartRef(C* pc, Flag) { ++(refCnt = new RefCounter<C>(pc, 0))->count; } // pointer-to-array constructor. Auto deletion provided
 		SmartRef(const C& c, const size_t& s = 1) { ++(refCnt = new RefCounter<C>(c, s))->count; } // object/array constructor with initialization. Total memory handling
 		SmartRef(const SmartRef<C>& sm) { ++(refCnt = sm.refCnt)->count; } // same-type copy constructor. Provides proper ref counting and memory handling
 		template <class Other>
@@ -78,16 +78,16 @@ namespace SmartReferenceCounter
 			return *this;
 		}
 
-		inline C& operator *() { return *((RefCounter<C>*)refCnt)->objP; }  // casting to object
-		inline C*& operator ->() { return ((RefCounter<C>*)refCnt)->objP; }  // casting to object`s props
-		inline operator C&() { return *((RefCounter<C>*)refCnt)->objP; }  // conversion to reference
-		inline operator C*&() { return ((RefCounter<C>*)refCnt)->objP; }  // conversion to pointer
+		explicit inline C& operator *() { return *((RefCounter<C>*)refCnt)->objP; }  // casting to object
+		explicit inline C*& operator ->() { return ((RefCounter<C>*)refCnt)->objP; }  // casting to object`s props
+		explicit inline operator C&() { return *((RefCounter<C>*)refCnt)->objP; }  // conversion to reference
+		explicit inline operator C*&() { return ((RefCounter<C>*)refCnt)->objP; }  // conversion to pointer
 
 		inline size_t getCount() { return refCnt->count; }
 
-		// Dangerous methods!
+		// Dangerous methods! Could be used for low-level control in needed
 		inline void incRef() { if (refCnt) ++refCnt->count; } // increasing reference counter
-		inline void decRef() { if (refCnt && !(--refCnt->count)) delete refCnt; }  // decreasing reference counter with calling of deletion
+		inline void decRef() { if (refCnt && !(--refCnt->count)) delete refCnt, refCnt = nullptr; }  // decreasing reference counter with calling of deletion
 	};
 
 	template <class C>  // Create self-clearing SmartRef which points to a new array of length 's' filled with copy of optional second argument
