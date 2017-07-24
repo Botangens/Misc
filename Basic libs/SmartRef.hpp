@@ -83,7 +83,7 @@ namespace SmartReferenceCounter
 
         size_t Count() const { return refCnt->count; } //!< number of references getter
 
-        // Dangerous methods! Could be used for low-level control in needed
+        // Dangerous low-level methods! Could be used for low-level control if needed
         inline void incRef() { if( refCnt ) ++refCnt->count; } //!< increasing reference counter
         inline void decRef() { if( refCnt && !(--refCnt->count) ) delete refCnt, refCnt = nullptr; }  //!< decreasing reference counter with calling of deletion
     };
