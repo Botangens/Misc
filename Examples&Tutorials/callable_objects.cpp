@@ -114,7 +114,7 @@ int main()
 
     F_test( foo );       // this is the only one suitable object. Oh, wait, it`s not!
 //  F_test( dfoo );
-    F_test( ai );        // this one may also be used as a 'int(*)()' - lambdas may be reduced to functions.
+    F_test( ai );        // !lambdas may be reduced to functions, but only with empty capture.
 //  F_test( ad );
 //  F_test( ufoo );
 //  F_test( ofoo );
